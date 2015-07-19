@@ -1,10 +1,21 @@
 #!/bin/bash -x
-MODE=private
-GW_PHY=192.168.0.1
-MASK_PHY=17
+
+# This is a simple bridge configuration where two namespaces are connected to a bridge.
+# The bridge takes on the host IP address
+
+# Get the local physical network info...
+source ../netconfig.sh
+
+# Set the net mask for the router namespace and test namespaces
+# MASK_R variable only used for routed network tests.
 #MASK_R=24
 MASK_NS=17
-ADDR_ETH0=192.168.0.191
+
+# Set the mode of the MACVLAN
+MODE=private
+
+# Set the addresses for the network that the namespaces will run.
+# ADDR_BRH only used for routed network tests
 
 ADDR_NET=192.168.65.0
 ADDR_NS0=192.168.65.226
@@ -28,7 +39,7 @@ ip netns add nspace1
 # Create the MACVLAN pairs...
 echo 'Create the MACVLAN pairs...'
 ip link add ns0 link eth0 type macvlan mode $MODE
-ip link add ns1 link eth0 type macvlan mode bridge
+ip link add ns1 link eth0 type macvlan mode $MODE
 
 echo 'Done.......'
 

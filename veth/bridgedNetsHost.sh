@@ -1,10 +1,16 @@
 #!/bin/bash -x
-GW_PHY=192.168.0.1
-MASK_PHY=17
-MASK_R=17
-MASK_NS=17
-ADDR_ETH0=192.168.0.191
+# This is a slight modificaion from the bridgedNet.sh example where the local 
+#host is added to the bridge.
 
+# Get the local physical network info...
+source ../netconfig.sh
+
+# Set the net mask for the router namespace (or bridge) and test namespaces
+MASK_R=24
+MASK_NS=17
+
+# Set the addresses for the network that the namespaces will run.
+# ADDR_BRH only used for routed network tests
 ADDR_NET=192.168.65.0
 ADDR_NS0=192.168.65.226
 ADDR_NS1=192.168.65.242
