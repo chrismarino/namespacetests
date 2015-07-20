@@ -12,7 +12,7 @@ source ../netconfig.sh
 MASK_NS=17
 
 # Set the mode of the IPVLAN
-MODE=l3
+MODE=l2
 
 # Set the addresses for the network that the namespaces will run.
 # ADDR_BRH only used for routed network tests
@@ -26,7 +26,7 @@ ADDR_VETH0=192.168.65.225
 ADDR_VETH1=192.168.65.241
 #ADDR_LOCAL=192.168.65.129
 
-#Namespace gateways are the veth side of the links
+#Namespace gateways are the same as the host, the physical net gateway.
 GW_NS0=$GW_PHY
 GW_NS1=$GW_PHY
 #GW_NSR=$ADDR_VETHR
@@ -38,7 +38,7 @@ ip netns add nspace1
 
 # Create the IPVLAN pairs...
 echo 'Create the IPVLANs pairs...'
-ip link add link eth0 ns2 type ipvlan mode $MODE
+ip link add link eth0 ns0 type ipvlan mode $MODE
 ip link add link eth0 ns1 type ipvlan mode $MODE
 
 echo 'Done.......'
@@ -66,7 +66,7 @@ echo 'Done.......'
 #echo 'Add the routes...'
 ip netns exec nspace0 ip route add default via $GW_NS0
 ip netns exec nspace1 ip route add default via $GW_NS1
-ip route add default via $GW_PHY dev eth0
+#ip route add default via $GW_PHY dev eth0
 
 #echo 'Done.......'
 

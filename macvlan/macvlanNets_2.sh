@@ -9,7 +9,7 @@ source ../netconfig.sh
 # Set the net mask for the router namespace and test namespaces
 # MASK_R variable only used for routed network tests.
 #MASK_R=24
-MASK_NS=17
+MASK_NS=28
 
 # Set the mode of the MACVLAN
 MODE=private
@@ -19,27 +19,35 @@ MODE=private
 
 ADDR_NET=192.168.65.0
 ADDR_NS0=192.168.65.226
-ADDR_NS1=192.168.65.242
+ADDR_NS1=192.168.65.227
+ADDR_NS2=192.168.65.242
+ADDR_NS3=192.168.65.243
 #ADDR_BRH=192.168.65.130
 
-ADDR_VETH0=192.168.65.225
-ADDR_VETH1=192.168.65.241
-#ADDR_LOCAL=192.168.65.129
+# Addresses of the new macvlan devices that are also used as gateways
+ADDR_MVL0=192.168.65.225
+ADDR_MVL1=192.168.65.241
 
 #Namespace gateways are the veth side of the links
-GW_NS0=$GW_PHY
-GW_NS1=$GW_PHY
+GW_NS0=$ADDR_MVL0
+GW_NS1=$ADDR_MVL0
+GW_NS2=$ADDR_MVL1
+GW_NS3=$ADDR_MVL1
 #GW_NSR=$ADDR_VETHR
 
 # Create the namespaces
 echo 'Creating the namespaces...'
 ip netns add nspace0
 ip netns add nspace1
+ip netns add nspace2
+ip netns add nspace3
 
 # Create the MACVLAN pairs...
 echo 'Create the MACVLAN pairs...'
 ip link add ns0 link eth0 type macvlan mode $MODE
 ip link add ns1 link eth0 type macvlan mode $MODE
+ip link add ns2 link eth0 type macvlan mode $MODE
+ip link add ns3 link eth0 type macvlan mode $MODE
 
 echo 'Done.......'
 
@@ -47,47 +55,41 @@ echo 'Done.......'
 echo 'Move the endpoints to the namespaces...'
 ip link set ns0 netns nspace0
 ip link set ns1 netns nspace1
+ip link set ns2 netns nspace2
+ip link set ns3 netns nspace3
 echo 'Done.......'
 
 # Add IPs and bring up the interfaces
 echo 'Add the IPs and bring up the interfaces.....'
 ip netns exec nspace0 ip addr add $ADDR_NS0/$MASK_NS dev ns0
 ip netns exec nspace1 ip addr add $ADDR_NS1/$MASK_NS dev ns1
+ip netns exec nspace2 ip addr add $ADDR_NS2/$MASK_NS dev ns2
+ip netns exec nspace3 ip addr add $ADDR_NS3/$MASK_NS dev ns3
 
 ip netns exec nspace0 ip link set dev lo up
 ip netns exec nspace1 ip link set dev lo up
+ip netns exec nspace2 ip link set dev lo up
+ip netns exec nspace3 ip link set dev lo up
+
 ip netns exec nspace0 ip link set dev ns0 up
 ip netns exec nspace1 ip link set dev ns1 up
+ip netns exec nspace2 ip link set dev ns2 up
+ip netns exec nspace3 ip link set dev ns3 up
 
-ip link set eth0 up
-#ip link set mvl1 up
-#echo 'Done.......'
+echo 'Done.......'
 
-# Add the bridge
-#echo 'Adding the bridge...'
-#brctl addbr br0
-#brctl addif br0 veth0 veth1 eth0
-#brctl addif br0 veth0 veth1 vethH
+# mvl0 and mvl1 are devices that the host can use to get to VLAN
+# they also will be the gateways when we want to add routes.
+ip link add mvl0 link eth0 type macvlan mode $MODE
+ip link add mvl1 link eth0 type macvlan mode $MODE
 
-# MACLAN does not need IPs on the device side like a bridge does.
-# so we don't need these lines from bridgeNet script.
+ip addr add $ADDR_MVL0/$MASK_NS dev mvl0
+ip addr add $ADDR_MVL1/$MASK_NS dev mvl1
 
-#ip addr add $ADDR_VETH0/$MASK_NS dev veth0
-#ip addr add $ADDR_VETH1/$MASK_NS dev veth1
-#ip addr add $ADDR_BRH/$MASK_NS dev vethH
-#ifconfig br0 up
-
-# Swap the IP from eth0 and br0
-ip addr delete $ADDR_ETH0/$MASK_PHY dev eth0
-ip addr add $ADDR_ETH0/$MASK_PHY dev eth0
-#ip addr add $ADDR_LOCAL/$MASK_PHY dev eth0
-
-# And finally add the routes. 
-#echo 'Add the routes...'
+echo 'Add the routes to the namespace'
 ip netns exec nspace0 ip route add default via $GW_NS0
 ip netns exec nspace1 ip route add default via $GW_NS1
-ip route add default via $GW_PHY dev eth0
-
-#echo 'Done.......'
-
+ip netns exec nspace2 ip route add default via $GW_NS2
+ip netns exec nspace3 ip route add default via $GW_NS3
+echo 'Done.......'
 
