@@ -9,13 +9,12 @@ source ../netconfig.sh
 # Set the net mask for the router namespace and test namespaces
 # MASK_R variable only used for routed network tests.
 #MASK_R=24
-MASK_NS=28
+MASK_NS=17
 
 # Set the mode of the MACVLAN
-MODE=private
+MODE=bridge
 
 # Set the addresses for the network that the namespaces will run.
-# ADDR_BRH only used for routed network tests
 
 ADDR_NET=192.168.65.0
 ADDR_NS0=192.168.65.226
@@ -24,16 +23,11 @@ ADDR_NS2=192.168.65.242
 ADDR_NS3=192.168.65.243
 #ADDR_BRH=192.168.65.130
 
-# Addresses of the new macvlan devices that are also used as gateways
-ADDR_MVL0=192.168.65.225
-ADDR_MVL1=192.168.65.241
-
 #Namespace gateways are the veth side of the links
-GW_NS0=$ADDR_MVL0
-GW_NS1=$ADDR_MVL0
-GW_NS2=$ADDR_MVL1
-GW_NS3=$ADDR_MVL1
-#GW_NSR=$ADDR_VETHR
+GW_NS0=$GW_PHY
+GW_NS1=$GW_PHY
+GW_NS2=$GW_PHY
+GW_NS3=$GW_PHY
 
 # Create the namespaces
 echo 'Creating the namespaces...'
@@ -77,14 +71,6 @@ ip netns exec nspace2 ip link set dev ns2 up
 ip netns exec nspace3 ip link set dev ns3 up
 
 echo 'Done.......'
-
-# mvl0 and mvl1 are devices that the host can use to get to VLAN
-# they also will be the gateways when we want to add routes.
-ip link add mvl0 link eth0 type macvlan mode $MODE
-ip link add mvl1 link eth0 type macvlan mode $MODE
-
-ip addr add $ADDR_MVL0/$MASK_NS dev mvl0
-ip addr add $ADDR_MVL1/$MASK_NS dev mvl1
 
 echo 'Add the routes to the namespace'
 ip netns exec nspace0 ip route add default via $GW_NS0
