@@ -10,7 +10,7 @@ source ../utils/netconfig.sh
 # and test namespaces
 # MASK_R variable only used for routed network tests.
 MASK_R=24
-MASK_NS=24
+MASK_NS=28
 
 # Set the mode for the MAV VLAN
 MODE=private
@@ -45,16 +45,17 @@ ip netns add nspace2
 ip netns add nspace3
 ip netns add nspaceR
 
-# Create the MAC VLAN....
-echo 'Create the MAC VLAN....'
-ip link add veth0 type veth peer name mvl0
+# Create the veth pairs...
+echo 'Create the veth pairs...
 ip link add nsR type veth peer name vethR
 
-ip link add ns0 link mvl0 type macvlan mode $MODE
-ip link add ns1 link mvl0 type macvlan mode $MODE
-ip link add ns2 link mvl0 type macvlan mode $MODE
-ip link add ns3 link mvl0 type macvlan mode $MODE
-#ip link add nsR link mvl0 type macvlan mode $MODE
+ip link add ns0 type veth peer name tap0
+ip link add ns1 type veth peer name tap1
+ip link add ns2 type veth peer name tap2
+ip link add ns3 type veth peer name tap3
+ip link add veth0 type veth peer name tap4
+ip link add veth1 type veth peer name tap5
+
 echo 'Done.......'
 
 # move the ends to the namespaces...

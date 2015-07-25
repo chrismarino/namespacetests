@@ -28,7 +28,7 @@ ADDR_VETHR=192.168.65.129
 #Namespace gateways are the upstream router interface
 GW_NS0=$ADDR_NSR
 GW_NS1=$ADDR_NSR
-GW_NSR=$ADDR_VETHR
+GW_NSR=$ADDR_ETH0
 
 # Create the namespaces
 echo 'Creating the namespaces...'
@@ -58,10 +58,6 @@ ip netns exec nspace0 ip addr add $ADDR_NS0/$MASK_NS dev ns0
 ip netns exec nspace1 ip addr add $ADDR_NS1/$MASK_NS dev ns1
 ip netns exec nspaceR ip addr add $ADDR_NSR/$MASK_R dev nsR
 
-#ip netns exec nspaceR ip addr add $ADDR_VETH0/$MASK_NS dev veth0
-#ip netns exec nspaceR ip addr add $ADDR_VETH1/$MASK_NS dev veth1
-ip addr add $ADDR_VETHR/$MASK_R dev vethR
-
 ip netns exec nspace0 ip link set dev lo up
 ip netns exec nspace1 ip link set dev lo up
 ip netns exec nspaceR ip link set dev lo up
@@ -80,14 +76,16 @@ ip netns exec nspaceR ../utils/echo1.sh
 ../utils/echo1.sh
 
 # And finally add the routes. 
-#echo 'Add the routes...'
+echo 'Add the routes...'
 ip netns exec nspace0 ip route add default dev ns0
 ip netns exec nspace1 ip route add default dev ns1
-ip netns exec nspaceR ip route add default via $GW_NSR
+ip netns exec nspaceR ip route add default dev nsR
 # Host routes on the router to get to them....
 ip netns exec nspaceR ip route add $ADDR_NS0 dev veth0
 ip netns exec nspaceR ip route add $ADDR_NS1 dev veth1
 
-#echo 'Done.......'
+# Add a route on the VM to get to the .65.0/24 net
+ip route add $ADDR_NET/$MASK_R dev vethR
+echo 'Done.......'
 
 

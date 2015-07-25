@@ -9,7 +9,7 @@ source ../utils/netconfig.sh
 # Set the net mask for the router namespace (and bridge interface) 
 # and test namespaces
 # MASK_R variable only used for routed network tests.
-MASK_R=24
+MASK_R=17
 MASK_NS=24
 
 # Set the mode for the MAV VLAN
@@ -31,10 +31,10 @@ ADDR_VETH1=192.168.65.241
 ADDR_VETHR=192.168.65.129
 
 #Namespace gateways are the upstream router interface
-GW_NS0=$ADDR_NSR
-GW_NS1=$ADDR_NSR
-GW_NS2=$ADDR_NSR
-GW_NS3=$ADDR_NSR
+GW_NS0=$ADDR_VETH0
+GW_NS1=$ADDR_VETH0
+GW_NS2=$ADDR_VETH0
+GW_NS3=$ADDR_VETH0
 GW_NSR=$ADDR_ETH0
 
 # Create the namespaces
@@ -73,6 +73,7 @@ ip netns exec nspace0 ip addr add $ADDR_NS0/$MASK_NS dev ns0
 ip netns exec nspace1 ip addr add $ADDR_NS1/$MASK_NS dev ns1
 ip netns exec nspace2 ip addr add $ADDR_NS2/$MASK_NS dev ns2
 ip netns exec nspace3 ip addr add $ADDR_NS3/$MASK_NS dev ns3
+ip netns exec nspaceR ip addr add $ADDR_VETH0/$MASK_NS dev veth0
 ip netns exec nspaceR ip addr add $ADDR_NSR/$MASK_R dev nsR
 
 ip netns exec nspace0 ip link set dev lo up
@@ -98,17 +99,17 @@ ip netns exec nspaceR ../utils/echo1.sh
 
 # And finally add the routes. 
 echo 'Add the routes...'
-ip netns exec nspace0 ip route add default dev ns0
-ip netns exec nspace1 ip route add default dev ns1
-ip netns exec nspace2 ip route add default dev ns2
-ip netns exec nspace3 ip route add default dev ns3
+ip netns exec nspace0 ip route add default via $GW_NS0 dev ns0
+ip netns exec nspace1 ip route add default via $GW_NS1 dev ns1
+ip netns exec nspace2 ip route add default via $GW_NS2 dev ns2
+ip netns exec nspace3 ip route add default via $GW_NS3 dev ns3
 ip netns exec nspaceR ip route add default dev nsR
 # Host routes on the router to get to them....
-ip netns exec nspaceR ip route add $ADDR_NS0 dev veth0
-ip netns exec nspaceR ip route add $ADDR_NS1 dev veth0
-ip netns exec nspaceR ip route add $ADDR_NS2 dev veth0
-ip netns exec nspaceR ip route add $ADDR_NS3 dev veth0
+#ip netns exec nspaceR ip route add $ADDR_NS0 dev veth0
+#ip netns exec nspaceR ip route add $ADDR_NS1 dev veth0
+#ip netns exec nspaceR ip route add $ADDR_NS2 dev veth0
+#ip netns exec nspaceR ip route add $ADDR_NS3 dev veth0
 
 # Add a route on the VM to get to the .65.0/24 net
-ip route add $ADDR_NET/$MASK_R dev vethR
+ip route add $ADDR_NET/$MASK_NS dev vethR
 echo 'Done.......'

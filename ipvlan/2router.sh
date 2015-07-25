@@ -9,8 +9,8 @@ source ../utils/netconfig.sh
 # Set the net mask for the router namespace (and bridge interface) 
 # and test namespaces
 # MASK_R variable only used for routed network tests.
-MASK_R=24
-MASK_NS=24
+MASK_R=17
+MASK_NS=17
 
 # Set the mode for the IP VLAN
 MODE=l3
