@@ -14,7 +14,7 @@ INSTANCE=B
 # and test namespaces
 # MASK_R variable only used for routed network tests.
 MASK_R=24
-MASK_NS=24
+MASK_NS=28
 
 # Set the mode for the IP VLAN
 MODE=l3
@@ -42,16 +42,11 @@ echo 'Done Configureing IPs in script'
 ADDR_NSR=192.168.$PRIV_NET.130
 ADDR_xHOST=192.168.$PRIV_NET.129
 
-ADDR_VETH0=192.168.$PRIV_NET.225
-ADDR_VETH1=192.168.$PRIV_NET.241
-ADDR_VETHR=192.168.$PRIV_NET.129
-
 #Namespace gateways are the upstream router interface
-GW_NS0=$ADDR_xHOST
-GW_NS1=$ADDR_xHOST
-GW_NS2=$ADDR_xHOST
-GW_NS3=$ADDR_xHOST
-GW_NSR=$ADDR_ETH0
+GW_NS0=192.168.$PRIV_NET.225
+GW_NS1=192.168.$PRIV_NET.225
+GW_NS2=192.168.$PRIV_NET.241
+GW_NS3=192.168.$PRIV_NET.241
 
 # Create the namespaces
 echo 'Creating the namespaces...'
