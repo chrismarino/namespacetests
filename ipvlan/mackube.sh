@@ -16,8 +16,8 @@ INSTANCE=B
 MASK_R=24
 MASK_NS=24
 
-# Set the mode for the IP VLAN
-MODE=l2
+# Set the mode for the MAC VLAN
+MODE=private
 
 # Set the addresses for the network that the namespaces will run.
 # ADDR_BRH only used for routed network tests
@@ -60,16 +60,16 @@ ip netns add nspace1
 ip netns add nspace2
 ip netns add nspace3
 
-# Create the IP VLAN....
-echo 'Create the IP VLAN....'
+# Create the MAC VLAN....
+echo 'Create the MAC VLAN....'
 #ip link add veth0 type veth peer name ipvl0
 #ip link add nsR type veth peer name vethR
 
-ip link add link eth0 ns0 type ipvlan mode $MODE
-ip link add link eth0 ns1 type ipvlan mode $MODE
-ip link add link eth0 ns2 type ipvlan mode $MODE
-ip link add link eth0 ns3 type ipvlan mode $MODE
-#ip link add link ipvl0 nsR type ipvlan mode $MODE
+ip link add ns0 link eth0 type macvlan mode $MODE
+ip link add ns1 link eth0 type macvlan mode $MODE
+ip link add ns2 link eth0 type macvlan mode $MODE
+ip link add ns3 link eth0 type macvlan mode $MODE
+#ip link addipvl0 link eth0 nsR type macvlan mode $MODE
 echo 'Done.......'
 
 # move the ends to the namespaces...
